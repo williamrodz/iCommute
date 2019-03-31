@@ -14,6 +14,7 @@
 		3D3BA3C422510B3600A8179B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3D3BA3C222510B3600A8179B /* LaunchScreen.storyboard */; };
 		3D3BA3CF22510B3700A8179B /* iCommuteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3CE22510B3700A8179B /* iCommuteTests.swift */; };
 		3D3BA3DA22510B3700A8179B /* iCommuteUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3D922510B3700A8179B /* iCommuteUITests.swift */; };
+		3D3BA3E82251119800A8179B /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3E72251119800A8179B /* MainViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		3D3BA3D522510B3700A8179B /* iCommuteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iCommuteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D3BA3D922510B3700A8179B /* iCommuteUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCommuteUITests.swift; sourceTree = "<group>"; };
 		3D3BA3DB22510B3700A8179B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3D3BA3E72251119800A8179B /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +101,7 @@
 			children = (
 				3D3BA3B922510B3000A8179B /* AppDelegate.swift */,
 				3D3BA3BB22510B3000A8179B /* ViewController.swift */,
+				3D3BA3E72251119800A8179B /* MainViewController.swift */,
 				3D3BA3BD22510B3100A8179B /* Main.storyboard */,
 				3D3BA3C022510B3600A8179B /* Assets.xcassets */,
 				3D3BA3C222510B3600A8179B /* LaunchScreen.storyboard */,
@@ -256,6 +259,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D3BA3E82251119800A8179B /* MainViewController.swift in Sources */,
 				3D3BA3BC22510B3000A8179B /* ViewController.swift in Sources */,
 				3D3BA3BA22510B3000A8179B /* AppDelegate.swift in Sources */,
 			);
