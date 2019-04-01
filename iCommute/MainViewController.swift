@@ -8,12 +8,16 @@
 
 import UIKit
 
+
+
 class MainViewController: UIViewController {
     
     // variables
     @IBOutlet weak var originField: UITextField!
     @IBOutlet weak var destinationField: UITextField!
-    
+    var savedNotifications:[CommuteNotification] = [];
+    let testOrigin:String = "428 Memorial Dr, Cambridge, MA"
+    let testDestination:String = "77 Massachusetts Ave, Cambridge, MA"
     
     let GoogleMapsAPIKey = "AIzaSyB65D4XHv6PkqvWJ7C-cFvT1QHi9OkqGCE";
     let GoogleMapsHTTPRequestBase = "https://maps.googleapis.com/maps/api/distancematrix/json?origins";
@@ -27,56 +31,85 @@ class MainViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
-    func executeHTTPRequest(urlString:String){
-        // here we are initializing the URL Struct with the path which we want to access from the API
-        let url = URL(string: urlString)!
-        //next, let's instantiate a shared URLSession which will provide us with an API to interact with 3rd parties (fetch/post data)
-        let urlSession = URLSession.shared
-        //create the URLRequest which will be used for fetching the data
-        let getRequest = URLRequest(url: url)
+    func getRequestURL(origin:String,destination:String) -> URL?{
+        var urlComponents = URLComponents(string: "https://maps.googleapis.com/maps/api/distancematrix/json?")
         
-        //Lets update the completion handler so that it prints some data for us and to check if this works.
-        let task = urlSession.dataTask(with: getRequest as URLRequest, completionHandler: { data, response, error in
-            
-            guard error == nil else {
-                return
-            }
-            
-            guard let data = data else {
-                return
-            }
-            
+        let arguments: [String: String] = [
+            "origins": testOrigin,
+            "destinations": testDestination,
+            "departure_time": "now",
+            "key":"AIzaSyB65D4XHv6PkqvWJ7C-cFvT1QHi9OkqGCE"
+        ]
+        
+        var queryItems = [URLQueryItem]()
+        
+        for (key, value) in arguments {
+            queryItems.append(URLQueryItem(name: key, value: value))
+        }
+        
+        urlComponents?.queryItems = queryItems
+        
+        if let url = urlComponents?.url {
+            print(url) //
+            return url
+        } else{
+            return URL(string:"https://www.google.com")
+        }
+    }
+    
+    
+    func fetchData(completion: @escaping ([String:Any]?, Error?) -> Void) {
+        //let url = URL(string: "http://api.geekdo.com/api/images?ajax=1&gallery=all&nosession=1&objectid=127023&objecttype=thing&pageid=357&showcount=1&size=thumb&sort=recent")!
+        let url = getRequestURL(origin: "test", destination: "test")!;
+        
+        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+            guard let data = data else { return }
             do {
-                
-                // the data is returned in JSON format and needs to be converted into something that swift can work with
-                // we are converting it into a dictionary of type [String: Any]
-                if let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: [String:String]] {
-                    let rows = json["rows"]!
-                    let elements = rows["elements"]!
-                    let firstElement = elements[0]
-                    let duration = firstElement["duration"]!
-                    print(duration)
-
+                if let array = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]{
+                    completion(array, nil)
                 }
-            } catch let error {
-                print(error.localizedDescription)
+            } catch {
+                print(error)
+                completion(nil, error)
             }
-        })
-        
+        }
         task.resume()
+    }
+    
 
+    
+    
+    
+    
+
+    
+    
+    @IBAction func calculateCommuteTimeButton(_ sender: UIButton) {
+        print("hi")
+        fetchData { (dict, error) in
+            //debugPrint(dict)
+            if let rows = dict?["rows"] as? [[String:Any]]{
+                if let elements = rows[0] as? [String:Any]{
+                    print("elements is")
+                    print(elements)
+                    if let actualElements = elements["elements"] as? [String:Any]{
+                        print(actualElements)
+                    }
+                
+                }
+            }
+        }
     }
     
-    func getDistanceJSON(origin:String,destination:String){
-        let GoogleMapsHTTPRequestTail = "&departure_time=now&key="+GoogleMapsAPIKey;
-        let requestURL = GoogleMapsHTTPRequestBase+origin+"&destinations="+destination+GoogleMapsHTTPRequestTail;
+    func saveNewNotification(){
+        var newNotification = CommuteNotification(origin: originField.text ?? testOrigin,destination: destinationField.text ?? testDestination,departureTime: "3:00PM");
+        savedNotifications.append(newNotification);
+    }
+    
+    func sendNotification(){
+        let notificatioName = Notification.Name("hi");
+        let newNotification = Notification(name:notificatioName);
         
-        executeHTTPRequest(urlString: requestURL);
-    }
-    
-    
-    @IBAction func calculateCommuteTimeButton(_ sender: UIButton) {  2
-        getDistanceJSON(origin: originField.text ?? "428 Memorial Dr, Cambridge, MA",destination: destinationField.text ?? "77 Massachusetts Ave, Cambridge, MA");
     }
     
     /*

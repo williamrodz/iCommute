@@ -15,6 +15,7 @@
 		3D3BA3CF22510B3700A8179B /* iCommuteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3CE22510B3700A8179B /* iCommuteTests.swift */; };
 		3D3BA3DA22510B3700A8179B /* iCommuteUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3D922510B3700A8179B /* iCommuteUITests.swift */; };
 		3D3BA3E82251119800A8179B /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3E72251119800A8179B /* MainViewController.swift */; };
+		3D3BA3EA22514FBD00A8179B /* CommuteNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3E922514FBD00A8179B /* CommuteNotification.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		3D3BA3D922510B3700A8179B /* iCommuteUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCommuteUITests.swift; sourceTree = "<group>"; };
 		3D3BA3DB22510B3700A8179B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3D3BA3E72251119800A8179B /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		3D3BA3E922514FBD00A8179B /* CommuteNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteNotification.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				3D3BA3B922510B3000A8179B /* AppDelegate.swift */,
+				3D3BA3E922514FBD00A8179B /* CommuteNotification.swift */,
 				3D3BA3BB22510B3000A8179B /* ViewController.swift */,
 				3D3BA3E72251119800A8179B /* MainViewController.swift */,
 				3D3BA3BD22510B3100A8179B /* Main.storyboard */,
@@ -260,6 +263,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3D3BA3E82251119800A8179B /* MainViewController.swift in Sources */,
+				3D3BA3EA22514FBD00A8179B /* CommuteNotification.swift in Sources */,
 				3D3BA3BC22510B3000A8179B /* ViewController.swift in Sources */,
 				3D3BA3BA22510B3000A8179B /* AppDelegate.swift in Sources */,
 			);
