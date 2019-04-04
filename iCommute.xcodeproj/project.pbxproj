@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		3D3BA3BA22510B3000A8179B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3B922510B3000A8179B /* AppDelegate.swift */; };
-		3D3BA3BC22510B3000A8179B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D3BA3BB22510B3000A8179B /* ViewController.swift */; };
 		3D3BA3BF22510B3100A8179B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3D3BA3BD22510B3100A8179B /* Main.storyboard */; };
 		3D3BA3C122510B3600A8179B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D3BA3C022510B3600A8179B /* Assets.xcassets */; };
 		3D3BA3C422510B3600A8179B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3D3BA3C222510B3600A8179B /* LaunchScreen.storyboard */; };
@@ -38,7 +37,6 @@
 /* Begin PBXFileReference section */
 		3D3BA3B622510B3000A8179B /* iCommute.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iCommute.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D3BA3B922510B3000A8179B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		3D3BA3BB22510B3000A8179B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		3D3BA3BE22510B3100A8179B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		3D3BA3C022510B3600A8179B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3D3BA3C322510B3600A8179B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -103,7 +101,6 @@
 			children = (
 				3D3BA3B922510B3000A8179B /* AppDelegate.swift */,
 				3D3BA3E922514FBD00A8179B /* CommuteNotification.swift */,
-				3D3BA3BB22510B3000A8179B /* ViewController.swift */,
 				3D3BA3E72251119800A8179B /* MainViewController.swift */,
 				3D3BA3BD22510B3100A8179B /* Main.storyboard */,
 				3D3BA3C022510B3600A8179B /* Assets.xcassets */,
@@ -264,7 +261,6 @@
 			files = (
 				3D3BA3E82251119800A8179B /* MainViewController.swift in Sources */,
 				3D3BA3EA22514FBD00A8179B /* CommuteNotification.swift in Sources */,
-				3D3BA3BC22510B3000A8179B /* ViewController.swift in Sources */,
 				3D3BA3BA22510B3000A8179B /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -441,7 +437,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5MNDPKJ5ZM;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = iCommute/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -459,7 +455,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5MNDPKJ5ZM;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = iCommute/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
