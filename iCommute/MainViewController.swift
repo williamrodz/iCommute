@@ -55,18 +55,59 @@ class MainViewController: UIViewController {
             return URL(string:"https://www.google.com")
         }
     }
-    
-    
+	
+	var currentResponseString:String = ""
+	
+	func getResponseString() -> String  {
+		let url = getRequestURL(origin: "test", destination: "test")!
+		// Excute HTTP Request
+		let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+			guard let data = data else {
+				print("Error: No data to decode")
+				return
+
+			}
+			do {
+				let responseString = String(data: data, encoding: String.Encoding.utf8)
+				print("-vvv-Response string produced -vvv-")
+				print(responseString)
+				print("-^^^-Response string produced -^^^-")
+
+				
+				//print("responseString is\n\(responseString)")
+				self.currentResponseString = responseString ?? ""
+
+				//return responseString
+			} catch {
+				print(error)
+				//return "error"
+			}
+		}
+		task.resume()
+		while self.currentResponseString == ""{
+			print("waitiing")
+		}
+		return self.currentResponseString
+	}
+	
+	
+	
     func fetchData(completion: @escaping ([String:Any]?, Error?) -> Void) {
 
         let url = getRequestURL(origin: "test", destination: "test")!;
         
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-            guard let data = data else { return }
+            guard let data = data else {
+				print("Error: No data to decode")
+				return
+
+			}
             do {
-                if let array = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]{
-                    completion(array, nil)
-                }
+				print("Data is :")
+				print(data);
+//                if let array = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]{
+//                    completion(array, nil)
+//                }
             } catch {
                 print(error)
                 completion(nil, error)
@@ -140,23 +181,17 @@ class MainViewController: UIViewController {
 	}
 	"""
 	
-	func decodeJSONString(jsonString:String){
+	func decodeJSONString(jsonString:String) -> Response?{
 		let jsonData = jsonString.data(using: .utf8)!
 		let jsonDecoder = JSONDecoder()
 		do {
-			let response1 = try jsonDecoder.decode(Response.self, from: jsonData)
-			let firstRow = response1.rows[0]
-			let firstElement = firstRow.elements[0]
-			let durationStruct = firstElement.duration
-			let durationString = durationStruct.text
+			let responseStruct = try jsonDecoder.decode(Response.self, from: jsonData)
+			return responseStruct
 		} catch{
 			print(error)
+			return nil
 		}
-
 	}
-
-	
-	
 
 	func fetchMapsData(){
 		fetchData { (dict, error) in
@@ -171,8 +206,21 @@ class MainViewController: UIViewController {
     
     
     @IBAction func calculateCommuteTimeButton(_ sender: UIButton) {
-		decodeJSONString(jsonString: sampleJSONString);
+		//decodeJSONString(jsonString: sampleJSONString);
 		//fetchMapsData();
+		let responseString = getResponseString()
+		print("--responseString seems to be---")
+		print(responseString)
+		
+		let responseStruct = decodeJSONString(jsonString: responseString)
+		
+		// work into the struct
+		let firstRow = responseStruct!.rows[0]
+		let firstElement = firstRow.elements[0]
+		let durationStruct = firstElement.duration
+		let durationString = durationStruct.text
+		
+		print("DURATION STRING IS\n\(durationString)")
 		//registerLocal();
 		//scheduleLocal();
 
