@@ -14,7 +14,8 @@ class MainViewController: UIViewController {
     // variables
     @IBOutlet weak var originField: UITextField!
     @IBOutlet weak var destinationField: UITextField!
-    var savedNotifications:[CommuteNotification] = [];
+	@IBOutlet weak var bodyLabel: UILabel!
+	var savedNotifications:[CommuteNotification] = [];
     let testOrigin:String = "428 Memorial Dr, Cambridge, MA"
     let testDestination:String = "77 Massachusetts Ave, Cambridge, MA"
     
@@ -34,8 +35,8 @@ class MainViewController: UIViewController {
         var urlComponents = URLComponents(string: "https://maps.googleapis.com/maps/api/distancematrix/json?")
         
         let arguments: [String: String] = [
-            "origins": testOrigin,
-            "destinations": testDestination,
+            "origins": origin,
+            "destinations": destination,
             "departure_time": "now",
             "key":"AIzaSyB65D4XHv6PkqvWJ7C-cFvT1QHi9OkqGCE"
         ]
@@ -59,7 +60,8 @@ class MainViewController: UIViewController {
 	var currentResponseString:String = ""
 	
 	func getResponseString() -> String  {
-		let url = getRequestURL(origin: "test", destination: "test")!
+		
+		let url = getRequestURL(origin: originField.text!, destination: destinationField.text!)!
 		// Excute HTTP Request
 		let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
 			guard let data = data else {
@@ -73,8 +75,6 @@ class MainViewController: UIViewController {
 				print(responseString)
 				print("-^^^-Response string produced -^^^-")
 
-				
-				//print("responseString is\n\(responseString)")
 				self.currentResponseString = responseString ?? ""
 
 				//return responseString
@@ -92,29 +92,7 @@ class MainViewController: UIViewController {
 	
 	
 	
-    func fetchData(completion: @escaping ([String:Any]?, Error?) -> Void) {
-
-        let url = getRequestURL(origin: "test", destination: "test")!;
-        
-        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-            guard let data = data else {
-				print("Error: No data to decode")
-				return
-
-			}
-            do {
-				print("Data is :")
-				print(data);
-//                if let array = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]{
-//                    completion(array, nil)
-//                }
-            } catch {
-                print(error)
-                completion(nil, error)
-            }
-        }
-        task.resume()
-    }
+	
 	/*
 	 The following struct definitions are needed to decode JSON response
 	*/
@@ -193,21 +171,8 @@ class MainViewController: UIViewController {
 		}
 	}
 
-	func fetchMapsData(){
-		fetchData { (dict, error) in
-			//debugPrint(dict)
-			if let rows = dict?["rows"] as? [[String:Any]]{
-				print("rows is")
-				print(rows)
-					
-				}
-			}
-		}
-    
-    
     @IBAction func calculateCommuteTimeButton(_ sender: UIButton) {
-		//decodeJSONString(jsonString: sampleJSONString);
-		//fetchMapsData();
+
 		let responseString = getResponseString()
 		print("--responseString seems to be---")
 		print(responseString)
@@ -220,7 +185,8 @@ class MainViewController: UIViewController {
 		let durationStruct = firstElement.duration
 		let durationString = durationStruct.text
 		
-		print("DURATION STRING IS\n\(durationString)")
+		bodyLabel.text = durationString
+		
 		//registerLocal();
 		//scheduleLocal();
 
@@ -274,5 +240,40 @@ class MainViewController: UIViewController {
         // Pass the selected object to the new view controller.
     }
     */
+	
+	
+	func fetchMapsData(){
+		fetchData { (dict, error) in
+			//debugPrint(dict)
+			if let rows = dict?["rows"] as? [[String:Any]]{
+				print("rows is")
+				print(rows)
+				
+			}
+		}
+	}
+	func fetchData(completion: @escaping ([String:Any]?, Error?) -> Void) {
+		
+		let url = getRequestURL(origin: "test", destination: "test")!;
+		
+		let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+			guard let data = data else {
+				print("Error: No data to decode")
+				return
+				
+			}
+			do {
+				print("Data is :")
+				print(data);
+				//                if let array = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any]{
+				//                    completion(array, nil)
+				//                }
+			} catch {
+				print(error)
+				completion(nil, error)
+			}
+		}
+		task.resume()
+	}
 
 }
