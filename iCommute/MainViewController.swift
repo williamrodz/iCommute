@@ -27,6 +27,9 @@ class MainViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+		let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+		view.addGestureRecognizer(tap)
+
 
         // Do any additional setup after loading the view.
     }
@@ -275,5 +278,9 @@ class MainViewController: UIViewController {
 		}
 		task.resume()
 	}
-
+	
+	// To allow keyboard to disappear after typing
+	@objc func dismissKeyboard() {
+		view.endEditing(true)
+	}
 }
