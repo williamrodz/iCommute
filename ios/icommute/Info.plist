@@ -38,7 +38,9 @@
 		</dict>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Location for finding where you commute</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Location for finding where you commute</string>	
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
