@@ -120,7 +120,7 @@ async function onSignIn() {
   return snapshot.val();
 }
 
-async function onCreateAccount() {
+async function addNewCommute(fromAddress,toAddress){
   // Get the users ID
   const uid = 'test_user'//auth().currentUser.uid;
 
@@ -129,10 +129,11 @@ async function onCreateAccount() {
 
   await ref.set({
     uid,
-    name: 'guineo',
-    role: 'admin',
+    commutes: [{"from":fromAddress,"to":toAddress}],
   });
+
 }
+
 
 function setFromAddress(address){
   globalFromAddress = address;
@@ -149,15 +150,11 @@ function setToAddress(address){
 
 async function submitNewCommuteButton (){
 
-  const current_value = onSignIn()
-
-
-  console.log("submitNewCommuteButton")
-  Alert.alert(`Submitted new commute","From:${current_value}\nTo:`)
-  onCreateAccount().then( (data)=> {
-    console.log("Succesful:"+data)
+  Alert.alert(`Submitted new commute\nFrom:${globalFromAddress}\nTo:${globalToAddress}`)
+  addNewCommute(globalFromAddress,globalToAddress).then( (data)=> {
+    Alert.alert("Succesfully added commute")
     }).catch((error)=>{
-      console.log("Error"+error)
+      Alert.alert("Adding commute failed\n:"+error);
       });
 }
 
