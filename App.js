@@ -125,32 +125,35 @@ async function addNewCommute(fromAddress,toAddress){
   const uid = 'test_user'//auth().currentUser.uid;
 
   // Create a reference
-  const ref = database().ref(`/users/test_user`);
+  const ref = database().ref(`/users/test_user/commutes`);
 
-  // get current value
-  const snapshot = await ref.once('commutes');
-
-  snapshot.then(
-    (data) => {
-      //Succesfully retrieved
-      var currentCommutes = snapshot.val();
-      currentCommutes.push({"from":fromAddress,"to":toAddress});
-      setCommutes(newCommutes)
-    })
+  await ref.push().set({
+    from: fromAddress,
+    to:toAddress
+  });
 }
 
-async function setCommutes(newCommutes){
+
+async function getCommutes() {
   // Get the users ID
-  const uid = 'test_user'//auth().currentUser.uid;
+  // const uid = auth().currentUser.uid;
 
   // Create a reference
-  const ref = database().ref(`/users/test_user`);
+  const ref = database().ref(`/users/test_user/commutes`);
 
-  await ref.set({
-    uid,
-    commutes: newCommutes,
+  // Fetch the data snapshot
+  const snapshot = await ref.once('value');
+  var addresses = [];
+  const snapShotCommutes = snapshot.val();
+  console.log('--------snapShotCommutes'+snapShotCommutes);
+  const timestampKeys = Object.keys(snapShotCommutes);
+  console.log('--------timestampKeys'+timestampKeys);
+  commutes = [];
+  timestampKeys.forEach((item, i) => {
+    commutes.push(snapShotCommutes[item])
   });
-
+  console.log("*****Commutes: "+commutes)
+  return commutes;
 }
 
 function setFromAddress(address){
@@ -171,7 +174,7 @@ async function submitNewCommuteButton (){
     'New Commute',
     `Would you like to add the following commute?:\nFrom:${globalFromAddress}\nTo:${globalToAddress}`,
     [
-
+      {text:'Cancel',onPress:()=>(console.log('cancelled'))},
       {text: 'OK', onPress: () => {
         addNewCommute(globalFromAddress,globalToAddress).then( (data)=> {
           Alert.alert("Succesfully added commute")
@@ -182,6 +185,30 @@ async function submitNewCommuteButton (){
     ],
     {cancelable: true},
   );
+
+}
+
+async function getCommutesButton(){
+  var user_data = getCommutes();
+
+
+
+  user_data.then(
+    (data) => {
+      output = '';
+      data.forEach((item, i) => {
+        output+= `from:${item.from} to:${item.to}\n`
+      });
+
+      Alert.alert(
+        "Succesfully retrieved commutes",`Commutes are ${output}`)
+
+    }
+    ).catch(
+      (error) => {
+        Alert.alert("Error retrieving\n"+error);
+      }
+      )
 
 }
 
@@ -224,7 +251,8 @@ function HomeScreen({navigation}) {
       <GooglePlacesInput processAddressFunction = {setFromAddress}/>
       <Text style={{fontSize:20}}>Where's work?</Text>
       <GooglePlacesInput processAddressFunction = {setToAddress}/>
-      <Button style={{backgroundColor:'white',paddingBottom:20}} title="Submit" onPress={submitNewCommuteButton}/>
+      <Button style={{color:'red'}} title="Submit" onPress={submitNewCommuteButton}/>
+      <Button style={{paddingBottom:20}} title="Get commutes" onPress={getCommutesButton}/>
 
 
 
