@@ -60,3 +60,4 @@ buck-out/
 
 # API
 apiKeys.json
+/ios/GoogleService-Info.plist
