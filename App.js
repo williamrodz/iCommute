@@ -127,13 +127,31 @@ async function addNewCommute(fromAddress,toAddress){
   // Create a reference
   const ref = database().ref(`/users/test_user`);
 
+  // get current value
+  const snapshot = await ref.once('commutes');
+
+  snapshot.then(
+    (data) => {
+      //Succesfully retrieved
+      var currentCommutes = snapshot.val();
+      currentCommutes.push({"from":fromAddress,"to":toAddress});
+      setCommutes(newCommutes)
+    })
+}
+
+async function setCommutes(newCommutes){
+  // Get the users ID
+  const uid = 'test_user'//auth().currentUser.uid;
+
+  // Create a reference
+  const ref = database().ref(`/users/test_user`);
+
   await ref.set({
     uid,
-    commutes: [{"from":fromAddress,"to":toAddress}],
+    commutes: newCommutes,
   });
 
 }
-
 
 function setFromAddress(address){
   globalFromAddress = address;
@@ -149,13 +167,22 @@ function setToAddress(address){
 }
 
 async function submitNewCommuteButton (){
+  Alert.alert(
+    'New Commute',
+    `Would you like to add the following commute?:\nFrom:${globalFromAddress}\nTo:${globalToAddress}`,
+    [
 
-  Alert.alert(`Submitted new commute\nFrom:${globalFromAddress}\nTo:${globalToAddress}`)
-  addNewCommute(globalFromAddress,globalToAddress).then( (data)=> {
-    Alert.alert("Succesfully added commute")
-    }).catch((error)=>{
-      Alert.alert("Adding commute failed\n:"+error);
-      });
+      {text: 'OK', onPress: () => {
+        addNewCommute(globalFromAddress,globalToAddress).then( (data)=> {
+          Alert.alert("Succesfully added commute")
+          }).catch((error)=>{
+            Alert.alert("Adding commute failed\n:"+error);
+            });
+            }},
+    ],
+    {cancelable: true},
+  );
+
 }
 
 class MainView extends React.Component{
