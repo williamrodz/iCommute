@@ -26,10 +26,48 @@ const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937
 const workPlace = { description: 'Work', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } }};
 
 
-var globalFromAddress= null;
-var globalToAddress= null;
+var globalFromAddress= 'Guaynabo,PR';
+var globalToAddress= 'Rincon,PR';
+
+const DISTANCES_API_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
+
+function processDistanceJSON(distanceJSON){
+    const responseKeys = Object.keys(distanceJSON);
+    // if (distanceJSON["status"] == 'OK'){
+    const firstDistanceElement = distanceJSON.rows[0].elements[0];
+    //[{"distance": {"text": "151 km", "value": 151114}, "duration": {"text": "2 hours 15 mins", "value": 8115}, "status": "OK"}]
+    const distanceText = firstDistanceElement.distance.text;
+    const durationText = firstDistanceElement.duration.text;
+    return {distanceText:distanceText,durationText:durationText}
+    // }
+    // else{
+    console.error("HTTP response status was :"+distanceJSON["status"]);
+    // }
+}
 
 
+async function getDistance(start,end){
+  console.log("START:"+start);
+  console.log("END:"+end);
+  var requestUrl = DISTANCES_API_URL;
+  requestUrl+=`key=${apiKeys.googleplaces}&origins=${start}&destinations=${end}`
+  console.log("requestUrl is:\n"+requestUrl)
+
+  return fetch(requestUrl,{method:'POST'})
+  .then((response) => response.json())
+  .then( (responseJson) => processDistanceJSON(responseJson))
+}
+
+async function getDistanceButton(){
+  transitInfo = await getDistance(globalFromAddress,globalToAddress);
+  console.log("transitInfo is "+transitInfo.distanceText);
+      Alert.alert(
+        'Distance Calculated',
+        'Distance: '+transitInfo.distanceText+'\nTime: '+transitInfo.durationText
+        )
+
+
+}
 
 class GooglePlacesInput extends React.Component{
 
@@ -46,10 +84,6 @@ class GooglePlacesInput extends React.Component{
         fetchDetails={true}
         renderDescription={row => row.description} // custom description render
         onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
-          console.log("- - - - - - - - - ");
-          console.log("data",data);
-          console.log("\n");
-          console.log("details", details);
           this.props.processAddressFunction(details['formatted_address']);
 
         }}
@@ -145,14 +179,11 @@ async function getCommutes() {
   const snapshot = await ref.once('value');
   var addresses = [];
   const snapShotCommutes = snapshot.val();
-  console.log('--------snapShotCommutes'+snapShotCommutes);
   const timestampKeys = Object.keys(snapShotCommutes);
-  console.log('--------timestampKeys'+timestampKeys);
   commutes = [];
   timestampKeys.forEach((item, i) => {
     commutes.push(snapShotCommutes[item])
   });
-  console.log("*****Commutes: "+commutes)
   return commutes;
 }
 
@@ -229,6 +260,16 @@ class MainView extends React.Component{
   }
 }
 
+
+function logAddresses(){
+  console.log('-----------')
+  console.log("globalFromAddress: "+globalFromAddress)
+  console.log("globalToAddress: "+globalToAddress)
+  console.log('-----------')
+
+
+}
+
 class Child extends React.Component {
   render() {
     return <Button onClick = {this.props.handler}/ >
@@ -253,6 +294,11 @@ function HomeScreen({navigation}) {
       <GooglePlacesInput processAddressFunction = {setToAddress}/>
       <Button style={{color:'red'}} title="Submit" onPress={submitNewCommuteButton}/>
       <Button style={{paddingBottom:20}} title="Get commutes" onPress={getCommutesButton}/>
+      <Button style={{paddingBottom:20}} title="Log from and to" onPress={logAddresses}/>
+
+      <Button style={{paddingBottom:20}} title="Get distance" onPress={getDistanceButton}/>
+
+
 
 
 
