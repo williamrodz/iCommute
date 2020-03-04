@@ -39,19 +39,13 @@ function processDistanceJSON(distanceJSON){
     const distanceText = firstDistanceElement.distance.text;
     const durationText = firstDistanceElement.duration.text;
     return {distanceText:distanceText,durationText:durationText}
-    // }
-    // else{
-    console.error("HTTP response status was :"+distanceJSON["status"]);
-    // }
 }
 
 
 async function getDistance(start,end){
-  console.log("START:"+start);
-  console.log("END:"+end);
+
   var requestUrl = DISTANCES_API_URL;
   requestUrl+=`key=${apiKeys.googleplaces}&origins=${start}&destinations=${end}`
-  console.log("requestUrl is:\n"+requestUrl)
 
   return fetch(requestUrl,{method:'POST'})
   .then((response) => response.json())
@@ -60,11 +54,10 @@ async function getDistance(start,end){
 
 async function getDistanceButton(){
   transitInfo = await getDistance(globalFromAddress,globalToAddress);
-  console.log("transitInfo is "+transitInfo.distanceText);
-      Alert.alert(
-        'Distance Calculated',
-        'Distance: '+transitInfo.distanceText+'\nTime: '+transitInfo.durationText
-        )
+  Alert.alert(
+    'Distance Calculated',
+    'Distance: '+transitInfo.distanceText+'\nTime: '+transitInfo.durationText
+    )
 
 
 }
@@ -205,7 +198,7 @@ async function submitNewCommuteButton (){
     'New Commute',
     `Would you like to add the following commute?:\nFrom:${globalFromAddress}\nTo:${globalToAddress}`,
     [
-      {text:'Cancel',onPress:()=>(console.log('cancelled'))},
+      {text:'Cancel',onPress:()=>(console.log('Cancelled adding commute'))},
       {text: 'OK', onPress: () => {
         addNewCommute(globalFromAddress,globalToAddress).then( (data)=> {
           Alert.alert("Succesfully added commute")
@@ -262,11 +255,7 @@ class MainView extends React.Component{
 
 
 function logAddresses(){
-  console.log('-----------')
-  console.log("globalFromAddress: "+globalFromAddress)
-  console.log("globalToAddress: "+globalToAddress)
-  console.log('-----------')
-
+  Alert.alert("Global addresses","globalFromAddress: "+globalFromAddress+"\nglobalToAddress: "+globalToAddress)
 
 }
 
@@ -329,7 +318,7 @@ function AddressRevealButton(){
     );
 }
 
-function DetailsScreen({navigation}) {
+function ExistingCommutesScreen({navigation}) {
   return (
     <View style={{flex:1,alignItems:'stretch',width:400}}>
       <View style={{flex:1,backgroundColor:'green'}}>
@@ -374,7 +363,7 @@ function MyTabs() {
   return (
     <Tab.Navigator>
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Details" component={DetailsScreen} />
+      <Tab.Screen name="Commutes" component={ExistingCommutesScreen} />
     </Tab.Navigator>
 
   );
