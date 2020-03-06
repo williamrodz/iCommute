@@ -20,6 +20,11 @@ import { firebase } from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 const apiKeys = require('./apiKeys.json');
+import { ListItem } from 'react-native-elements'
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import Ionicons from "react-native-vector-icons/Ionicons"
+
+
 
 
 const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
@@ -215,8 +220,6 @@ async function submitNewCommuteButton (){
 async function getCommutesButton(){
   var user_data = getCommutes();
 
-
-
   user_data.then(
     (data) => {
       output = '';
@@ -287,28 +290,10 @@ function HomeScreen({navigation}) {
 
       <Button style={{paddingBottom:20}} title="Get distance" onPress={getDistanceButton}/>
 
-
-
-
-
-
-
-
-
     </View>
   );
 }
-// <View style={{flex:2,backgroundColor:'orange',alignItems: 'center',justifyContent: 'center',paddingTop:50,width:500}}>
-//   <Text styles={{fontSize:1}}>What's your daily commute?</Text>
-//   <Text style={{paddingTop:0}}>What's your daily commute?</Text>
-// </View>
-// <View style={{flex:2,alignItems: 'stretch',justifyContent: 'center',backgroundColor:'chartreuse',width:500}}>
-//   <Button style={{backgroundColor:'white'}} title="Submit" onPress={submitNewCommuteButton}/>
-//   <View style={{alignItems:'center'}}>
-//     <Text style={styles.modulesHeader}>The following Firebase modules are pre-installed:</Text>
-//     {firebase.database.nativeModuleExists && <Text style={styles.module}>database()</Text>}
-//   </View>
-// </View>
+
 
 function AddressRevealButton(){
   return (
@@ -318,19 +303,43 @@ function AddressRevealButton(){
     );
 }
 
+
+const list = [
+  {
+    title: 'Appointments',
+    icon: 'av-timer'
+  },
+  {
+    title: 'Trips',
+    icon: 'flight-takeoff'
+  },
+]
+
+function getCommutesListItems(){
+  const commutes = [1,2]
+  var listItems = [];
+  commutes.forEach((item, i) => {
+    listItems.push(<ListItem key={i} title='Testing'/>)
+  });
+  return listItems;
+}
+
 function ExistingCommutesScreen({navigation}) {
   return (
-    <View style={{flex:1,alignItems:'stretch',width:400}}>
-      <View style={{flex:1,backgroundColor:'green'}}>
-        <Text style={{fontSize:30}}>Details Screen</Text>
+    <View style={{flex:1,alignItems:'stretch',...StyleSheet.absoluteFillObject}}>
+      <View style={{flex:1,alignItems:'center',backgroundColor:'green',paddingTop:40}}>
+        <Text style={{fontSize:30,paddingBottom:10}}>Saved Commutes</Text>
+        <View style={{backgroundColor:'blue',alignItems:'stretch',width:'100%'}}>
+          <ListItem
+            key={0}
+            title='TESTING'
+            bottomDivider
+            chevron
+          />
+          {getCommutesListItems()}
+        </View>
+
       </View>
-      <View style={{flex:1,backgroundColor:'chartreuse',alignItems:'center'}}>
-        <Text style={{fontSize:30}}>Details Screen</Text>
-        <Button title="hi"/>
-
-
-      </View>
-
     </View>
   );
 }
