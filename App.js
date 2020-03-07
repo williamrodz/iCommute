@@ -22,9 +22,6 @@ import database from '@react-native-firebase/database';
 const apiKeys = require('./apiKeys.json');
 import { ListItem } from 'react-native-elements'
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
-import Ionicons from "react-native-vector-icons/Ionicons"
-
-
 
 
 const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
@@ -315,29 +312,39 @@ const list = [
   },
 ]
 
-function getCommutesListItems(){
-  const commutes = [1,2]
-  var listItems = [];
-  commutes.forEach((item, i) => {
-    listItems.push(<ListItem key={i} title='Testing'/>)
-  });
-  return listItems;
+
+
+class CommutesListView extends React.Component{
+  constructor (props){
+    super(props);
+    this.state = {commutes:[]}
+  }
+
+
+  async componentDidMount(){
+    const userCommutes = await getCommutes();
+    this.setState({commutes:userCommutes});
+
+  }
+
+  render(){
+    const listItems = []
+    this.state.commutes.forEach((item, i) => {
+      listItems.push(<ListItem key={i} title={item.from +' to '+item.to} bottomDivider/>)
+    });
+
+    return <View style={{width:"100%",backgroundColor:'white'}}>{listItems}</View>;
+  }
 }
+
 
 function ExistingCommutesScreen({navigation}) {
   return (
     <View style={{flex:1,alignItems:'stretch',...StyleSheet.absoluteFillObject}}>
       <View style={{flex:1,alignItems:'center',backgroundColor:'green',paddingTop:40}}>
-        <Text style={{fontSize:30,paddingBottom:10}}>Saved Commutes</Text>
-        <View style={{backgroundColor:'blue',alignItems:'stretch',width:'100%'}}>
-          <ListItem
-            key={0}
-            title='TESTING'
-            bottomDivider
-            chevron
-          />
-          {getCommutesListItems()}
-        </View>
+      <Text style={{fontSize:30,paddingBottom:10}}>Saved Commutes</Text>
+      <CommutesListView/>
+
 
       </View>
     </View>
