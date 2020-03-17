@@ -8,7 +8,7 @@
 import 'react-native-gesture-handler';
 
 import * as React from 'react';
-import { View, Text, Button,StyleSheet,Alert,Picker,TextInput } from 'react-native';
+import { View, Text,StyleSheet,Alert,Picker,TextInput } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -20,16 +20,19 @@ import { firebase } from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 const apiKeys = require('./apiKeys.json');
-import { ListItem } from 'react-native-elements'
+import { ListItem, Button } from 'react-native-elements'
+import Icon from 'react-native-vector-icons/FontAwesome';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+Icon.loadFont();
+
 
 
 const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
 const workPlace = { description: 'Work', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } }};
 
 
-var globalFromAddress= 'Guaynabo,PR';
-var globalToAddress= 'Rincon,PR';
+var globalFromAddress= 'IOTA_FROM';
+var globalToAddress= 'IOTA_TO';
 
 const DISTANCES_API_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
 
@@ -46,16 +49,24 @@ function processDistanceJSON(distanceJSON){
 
 async function getDistance(start,end){
 
-  var requestUrl = DISTANCES_API_URL;
-  requestUrl+=`key=${apiKeys.googleplaces}&origins=${start}&destinations=${end}`
+  var requestUrl = "https://us-central1-icommute-firebase.cloudfunctions.net/getDistance?";
+  requestUrl+=`from=${start}&to=${end}`
 
+  console.log("requestUrl:\n",requestUrl);
   return fetch(requestUrl,{method:'POST'})
-  .then((response) => response.json())
-  .then( (responseJson) => processDistanceJSON(responseJson))
+  .then((response) => {
+    console.log("response:\n");
+    return response.json();
+
+    })
+  .then( (responseJson) => {
+    console.log(responseJson);
+    return responseJson;
+    })
 }
 
 async function getDistanceButton(){
-  transitInfo = await getDistance(globalFromAddress,globalToAddress);
+  transitInfo = await getDistance("428 Memorial, Dr, Cambridge,MA","77 Massachusetts Ave,Cambridge, MA");
   Alert.alert(
     'Distance Calculated',
     'Distance: '+transitInfo.distanceText+'\nTime: '+transitInfo.durationText
@@ -195,7 +206,7 @@ function setToAddress(address){
 
 }
 
-async function submitNewCommuteButton (){
+async function submitNewCommuteButton (navigation){
   Alert.alert(
     'New Commute',
     `Would you like to add the following commute?:\nFrom:${globalFromAddress}\nTo:${globalToAddress}`,
@@ -203,7 +214,10 @@ async function submitNewCommuteButton (){
       {text:'Cancel',onPress:()=>(console.log('Cancelled adding commute'))},
       {text: 'OK', onPress: () => {
         addNewCommute(globalFromAddress,globalToAddress).then( (data)=> {
-          Alert.alert("Succesfully added commute")
+          Alert.alert("Succesfully added commute");
+          navigation.navigate({ name: 'commutes' });
+
+
           }).catch((error)=>{
             Alert.alert("Adding commute failed\n:"+error);
             });
@@ -265,30 +279,41 @@ class Child extends React.Component {
   }
 }
 
-function HomeScreen({navigation}) {
-  const daysOfTheWeek = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
-  var pickerItems = []
-  daysOfTheWeek.forEach((item, i) => {
-    pickerItems.push(getPickerItem(item,item,i))
-
-  });
-
+class AddCommuteScreen extends React.Component {
+  constructor(props){
+    super(props);
+    console.log("------PROPS ARE------");
+    console.log(props);
+    const daysOfTheWeek = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 
 
-  return (
-    <View style={{flex:1,backgroundColor:'bisque',alignItems:'center',justifyContent:'center',paddingTop:100}}>
-      <Text style={{fontSize:20,paddingBottom:10}}>What's your home address?</Text>
-      <GooglePlacesInput processAddressFunction = {setFromAddress}/>
-      <Text style={{fontSize:20}}>Where's work?</Text>
-      <GooglePlacesInput processAddressFunction = {setToAddress}/>
-      <Button style={{color:'red'}} title="Submit" onPress={submitNewCommuteButton}/>
-      <Button style={{paddingBottom:20}} title="Get commutes" onPress={getCommutesButton}/>
-      <Button style={{paddingBottom:20}} title="Log from and to" onPress={logAddresses}/>
+  }
 
-      <Button style={{paddingBottom:20}} title="Get distance" onPress={getDistanceButton}/>
 
-    </View>
-  );
+
+  render (){
+    return (
+      <View style={{flex:1,backgroundColor:'bisque',alignItems:'center',justifyContent:'center',paddingTop:100}}>
+        <Text style={{fontSize:20,paddingBottom:10}}>What's your home address?</Text>
+        <GooglePlacesInput processAddressFunction = {setFromAddress}/>
+        <Text style={{fontSize:20}}>Where's work?</Text>
+        <GooglePlacesInput processAddressFunction = {setToAddress}/>
+        <Button style={{color:'red'}} title="Submit" onPress={()=> submitNewCommuteButton(this.props.navigation)}/>
+        <Button style={{paddingBottom:20}} title="Get commutes" onPress={getCommutesButton}/>
+        <Button style={{paddingBottom:20}} title="Log from and to" onPress={logAddresses}/>
+
+        <Button style={{paddingBottom:20}} title="Get distance" onPress={getDistanceButton}/>
+        <Button style={{paddingBottom:20}} title="Return" onPress={()=>this.props.navigation.navigate({ name: 'commutes' })}/>
+
+
+
+
+      </View>
+    );
+
+  }
+
+
 }
 
 
@@ -312,6 +337,9 @@ const list = [
   },
 ]
 
+function testAlert(){
+  Alert.alert("Test alert","testing...")
+}
 
 
 class CommutesListView extends React.Component{
@@ -330,10 +358,10 @@ class CommutesListView extends React.Component{
   render(){
     const listItems = []
     this.state.commutes.forEach((item, i) => {
-      listItems.push(<ListItem key={i} title={item.from +' to '+item.to} bottomDivider/>)
+      listItems.push(<ListItem key={i} title={item.from +' to '+item.to} onPress={testAlert} bottomDivider/>)
     });
 
-    return <View style={{width:"100%",backgroundColor:'white'}}>{listItems}</View>;
+    return <View style={this.props.style}>{listItems}</View>;
   }
 }
 
@@ -342,47 +370,43 @@ function ExistingCommutesScreen({navigation}) {
   return (
     <View style={{flex:1,alignItems:'stretch',...StyleSheet.absoluteFillObject}}>
       <View style={{flex:1,alignItems:'center',backgroundColor:'green',paddingTop:40}}>
-      <Text style={{fontSize:30,paddingBottom:10}}>Saved Commutes</Text>
-      <CommutesListView/>
-
-
+        <View >
+          <Text style={{fontSize:30}}>Saved Commutes</Text>
+          <Button title="Add Commute"
+            onPress = {() => {
+              this.handler;
+              navigation.navigate('addNewCommute')}
+            }
+            style={{paddingTop:10,paddingBottom:10}} icon={<Icon name="plus" size={15} color="white"/>}/>
+        </View>
+        <CommutesListView style={{width:"100%",backgroundColor:'white'}}/>
       </View>
     </View>
   );
 }
 
 
-var styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    },
-  topPadded:{
-    paddingTop:50,
-  },
-  homeAddressInputView:{
-    backgroundColor:'orange'
-  },
-  workAddressInputView:{
-    backgroundColor:'aqua'
-    },
-  boldText:{
-  }
-
-  });
-
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-function MyTabs() {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Commutes" component={ExistingCommutesScreen} />
-    </Tab.Navigator>
 
-  );
+class MainAppScreens extends React.Component{
+  constructor(props){
+    super(props);
+    // this.state = {headerShown:false};
+  }
+
+
+  render(){
+    return (
+    <Stack.Navigator >
+      <Stack.Screen name="commutes" component={ExistingCommutesScreen}  options={{headerShown: false,title:"Existing Commutes"}}/>
+      <Stack.Screen name="addNewCommute" component={AddCommuteScreen} options={{headerShown: true,title:"Add new commute"}}/>
+    </Stack.Navigator>);
+
+  }
+
 }
 
 function App() {
@@ -391,7 +415,7 @@ function App() {
     }
   return (
     <NavigationContainer>
-      <MyTabs/>
+      <MainAppScreens/>
     </NavigationContainer>
   );
 }
