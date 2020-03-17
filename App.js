@@ -19,6 +19,9 @@ navigator.geolocation = require('@react-native-community/geolocation');
 import { firebase } from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
+
 const apiKeys = require('./apiKeys.json');
 import { ListItem, Button } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -279,16 +282,15 @@ class Child extends React.Component {
   }
 }
 
+
+
 class AddCommuteScreen extends React.Component {
   constructor(props){
     super(props);
-    console.log("------PROPS ARE------");
-    console.log(props);
     const daysOfTheWeek = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
-
+    this.state={timePickerVisible:false}
 
   }
-
 
 
   render (){
@@ -298,12 +300,20 @@ class AddCommuteScreen extends React.Component {
         <GooglePlacesInput processAddressFunction = {setFromAddress}/>
         <Text style={{fontSize:20}}>Where's work?</Text>
         <GooglePlacesInput processAddressFunction = {setToAddress}/>
-        <Button style={{color:'red'}} title="Submit" onPress={()=> submitNewCommuteButton(this.props.navigation)}/>
-        <Button style={{paddingBottom:20}} title="Get commutes" onPress={getCommutesButton}/>
-        <Button style={{paddingBottom:20}} title="Log from and to" onPress={logAddresses}/>
+        <DateTimePickerModal
+          isVisible={this.state.timePickerVisible}
+          mode="time"
+          onConfirm={(time)=>this.setState({timePickerVisible:false,time:time})}
+          onCancel={()=>Alert.alert("canceled")}
+        />
+        <Button icon={<Icon name="clock-o" size={15} color="white"/>}
+        style={{padding:5}} title="Set Time" onPress={()=>this.setState({timePickerVisible:true})}/>
 
-        <Button style={{paddingBottom:20}} title="Get distance" onPress={getDistanceButton}/>
-        <Button style={{paddingBottom:20}} title="Return" onPress={()=>this.props.navigation.navigate({ name: 'commutes' })}/>
+        <Button containerStyle={{backgroundColor:'green'}} titleStyle={{color:"white"}} type="clear" title="Submit" onPress={()=> submitNewCommuteButton(this.props.navigation)}/>
+        <Button style={{padding:5}} title="Log from and to" onPress={logAddresses}/>
+
+        <Button style={{padding:5}} title="Show Time" onPress={()=>Alert.alert(`Time is ${this.state.time.getHours()}:${this.state.time.getMinutes()}`)}/>
+        <Button style={{padding:5}} title="Return" onPress={()=>this.props.navigation.navigate({ name: 'commutes' })}/>
 
 
 
@@ -337,9 +347,6 @@ const list = [
   },
 ]
 
-function testAlert(){
-  Alert.alert("Test alert","testing...")
-}
 
 
 class CommutesListView extends React.Component{
@@ -358,7 +365,7 @@ class CommutesListView extends React.Component{
   render(){
     const listItems = []
     this.state.commutes.forEach((item, i) => {
-      listItems.push(<ListItem key={i} title={item.from +' to '+item.to} onPress={testAlert} bottomDivider/>)
+      listItems.push(<ListItem key={i} title={item.from +' to '+item.to} onPress={()=>Alert.alert("Test alert","testing...")} bottomDivider/>)
     });
 
     return <View style={this.props.style}>{listItems}</View>;
