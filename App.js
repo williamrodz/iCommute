@@ -33,10 +33,6 @@ Icon.loadFont();
 const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
 const workPlace = { description: 'Work', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } }};
 
-
-var globalFromAddress= 'IOTA_FROM';
-var globalToAddress= 'IOTA_TO';
-
 const DISTANCES_API_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
 
 function processDistanceJSON(distanceJSON){
@@ -55,15 +51,12 @@ async function getDistance(start,end){
   var requestUrl = "https://us-central1-icommute-firebase.cloudfunctions.net/getDistance?";
   requestUrl+=`from=${start}&to=${end}`
 
-  console.log("requestUrl:\n",requestUrl);
   return fetch(requestUrl,{method:'POST'})
   .then((response) => {
-    console.log("response:\n");
     return response.json();
 
     })
   .then( (responseJson) => {
-    console.log(responseJson);
     return responseJson;
     })
 }
@@ -75,11 +68,9 @@ async function getDistanceButton(){
     'Distance: '+transitInfo.distanceText+'\nTime: '+transitInfo.durationText
     )
 
-
 }
 
 class GooglePlacesInput extends React.Component{
-
 
   render (){
     return (
@@ -163,7 +154,7 @@ async function onSignIn() {
   return snapshot.val();
 }
 
-async function addNewCommute(fromAddress,toAddress){
+async function addNewCommute(fromAddress,toAddress,time){
   // Get the users ID
   const uid = 'test_user'//auth().currentUser.uid;
 
@@ -172,7 +163,9 @@ async function addNewCommute(fromAddress,toAddress){
 
   await ref.push().set({
     from: fromAddress,
-    to:toAddress
+    to:toAddress,
+    beginHour:time.getHours(),
+    beginMinutes:time.getMinutes()
   });
 }
 
@@ -196,27 +189,26 @@ async function getCommutes() {
   return commutes;
 }
 
-function setFromAddress(address){
-  globalFromAddress = address;
-  console.log(`Set from address to ${address}`);
+
+async function deleteAllCommutes(parent){
+  const ref = database().ref(`/users/test_user/commutes`);
+  ref.remove()
+  .then((data)=>{
+    Alert.alert("Succesfully deleted commutes")
+    parent.forceUpdate()
+    })
+  .catch(error=>"Error deleting:"+error);
 
 }
 
-function setToAddress(address){
-  globalToAddress = address;
-  console.log(`Set to address to ${address}`);
-
-
-}
-
-async function submitNewCommuteButton (navigation){
+async function submitNewCommuteButton (navigation,state){
   Alert.alert(
     'New Commute',
-    `Would you like to add the following commute?:\nFrom:${globalFromAddress}\nTo:${globalToAddress}`,
+    `Would you like to add the following commute?:\nFrom:${state.from}\nTo:${state.to}\n${state.time}`,
     [
       {text:'Cancel',onPress:()=>(console.log('Cancelled adding commute'))},
       {text: 'OK', onPress: () => {
-        addNewCommute(globalFromAddress,globalToAddress).then( (data)=> {
+        addNewCommute(state.from,state.to,state.time).then( (data)=> {
           Alert.alert("Succesfully added commute");
           navigation.navigate({ name: 'commutes' });
 
@@ -271,11 +263,6 @@ class MainView extends React.Component{
 }
 
 
-function logAddresses(){
-  Alert.alert("Global addresses","globalFromAddress: "+globalFromAddress+"\nglobalToAddress: "+globalToAddress)
-
-}
-
 class Child extends React.Component {
   render() {
     return <Button onClick = {this.props.handler}/ >
@@ -287,7 +274,6 @@ class Child extends React.Component {
 class AddCommuteScreen extends React.Component {
   constructor(props){
     super(props);
-    const daysOfTheWeek = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
     this.state={timePickerVisible:false}
 
   }
@@ -297,9 +283,9 @@ class AddCommuteScreen extends React.Component {
     return (
       <View style={{flex:1,backgroundColor:'bisque',alignItems:'center',justifyContent:'center',paddingTop:100}}>
         <Text style={{fontSize:20,paddingBottom:10}}>What's your home address?</Text>
-        <GooglePlacesInput processAddressFunction = {setFromAddress}/>
+        <GooglePlacesInput processAddressFunction = {from=>this.setState({from:from})}/>
         <Text style={{fontSize:20}}>Where's work?</Text>
-        <GooglePlacesInput processAddressFunction = {setToAddress}/>
+        <GooglePlacesInput processAddressFunction = {to=>this.setState({to:to})}/>
         <DateTimePickerModal
           isVisible={this.state.timePickerVisible}
           mode="time"
@@ -309,15 +295,7 @@ class AddCommuteScreen extends React.Component {
         <Button icon={<Icon name="clock-o" size={15} color="white"/>}
         style={{padding:5}} title="Set Time" onPress={()=>this.setState({timePickerVisible:true})}/>
 
-        <Button containerStyle={{backgroundColor:'green'}} titleStyle={{color:"white"}} type="clear" title="Submit" onPress={()=> submitNewCommuteButton(this.props.navigation)}/>
-        <Button style={{padding:5}} title="Log from and to" onPress={logAddresses}/>
-
-        <Button style={{padding:5}} title="Show Time" onPress={()=>Alert.alert(`Time is ${this.state.time.getHours()}:${this.state.time.getMinutes()}`)}/>
-        <Button style={{padding:5}} title="Return" onPress={()=>this.props.navigation.navigate({ name: 'commutes' })}/>
-
-
-
-
+        <Button containerStyle={{backgroundColor:'green'}} titleStyle={{color:"white"}} type="clear" title="Submit" onPress={()=> submitNewCommuteButton(this.props.navigation,this.state)}/>
       </View>
     );
 
@@ -373,23 +351,33 @@ class CommutesListView extends React.Component{
 }
 
 
-function ExistingCommutesScreen({navigation}) {
-  return (
-    <View style={{flex:1,alignItems:'stretch',...StyleSheet.absoluteFillObject}}>
-      <View style={{flex:1,alignItems:'center',backgroundColor:'green',paddingTop:40}}>
-        <View >
-          <Text style={{fontSize:30}}>Saved Commutes</Text>
-          <Button title="Add Commute"
-            onPress = {() => {
-              this.handler;
-              navigation.navigate('addNewCommute')}
-            }
-            style={{paddingTop:10,paddingBottom:10}} icon={<Icon name="plus" size={15} color="white"/>}/>
+class ExistingCommutesScreen extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {toggle:false}
+  }
+
+  render(){
+    return (
+      <View style={{flex:1,alignItems:'stretch',...StyleSheet.absoluteFillObject}}>
+        <View style={{flex:1,alignItems:'center',backgroundColor:'green',paddingTop:40}}>
+          <View >
+            <Text style={{fontSize:30}}>Your Commutes</Text>
+            <Button title="Add Commute"
+              onPress = {() => {
+                this.handler;
+                this.props.navigation.navigate('addNewCommute')}
+              }
+              style={{paddingTop:10,paddingBottom:10}} icon={<Icon name="plus" size={15} color="white"/>}/>
+          </View>
+          <CommutesListView style={{width:"100%",backgroundColor:'white'}}/>
+          <Button title="Delete all" onPress={()=>deleteAllCommutes(this)}/>
         </View>
-        <CommutesListView style={{width:"100%",backgroundColor:'white'}}/>
       </View>
-    </View>
-  );
+    );
+
+  }
+
 }
 
 
@@ -401,7 +389,6 @@ const Stack = createStackNavigator();
 class MainAppScreens extends React.Component{
   constructor(props){
     super(props);
-    // this.state = {headerShown:false};
   }
 
 
