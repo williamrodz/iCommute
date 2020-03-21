@@ -30,6 +30,7 @@ Icon.loadFont();
 
 
 
+
 const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
 const workPlace = { description: 'Work', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } }};
 
@@ -136,10 +137,6 @@ class GooglePlacesInput extends React.Component{
 
 }
 
-function getPickerItem(label,item,key){
-  return <Picker.Item label={item} value={item} key={key}/>
-}
-
 
 async function onSignIn() {
   // Get the users ID
@@ -169,7 +166,6 @@ async function addNewCommute(fromAddress,toAddress,time){
   });
 }
 
-
 async function getCommutes() {
   // Get the users ID
   // const uid = auth().currentUser.uid;
@@ -190,18 +186,80 @@ async function getCommutes() {
 }
 
 
-async function deleteAllCommutes(parent){
+async function deleteAllCommutes(viewRefreshFunction){
   const ref = database().ref(`/users/test_user/commutes`);
   ref.remove()
   .then((data)=>{
     Alert.alert("Succesfully deleted commutes")
-    parent.forceUpdate()
+    viewRefreshFunction();
     })
   .catch(error=>"Error deleting:"+error);
 
 }
 
-async function submitNewCommuteButton (navigation,state){
+
+class ExistingCommutesScreen extends React.Component {
+  constructor(props){
+    super(props);
+
+    this.state = {commutes:false,listItems:[]}
+    this.props.navigation.setParams({refresh:()=>console.log("Called refresh")});
+
+  }
+
+  async componentDidMount(){
+
+    const userCommutes = await getCommutes();
+    this.setState({commutes:userCommutes});
+
+    if (this.state.commutes){
+      var newList = [];
+      this.state.commutes.forEach((item, i) => {
+        newList.push(<ListItem key={i} title={item.from +' to '+item.to} onPress={()=>Alert.alert(`${item.from}`)} bottomDivider/>)
+      });
+      this.setState({listItems:newList});
+    }
+
+  }
+
+  render(){
+    return (
+      <View style={{flex:1,alignItems:'stretch',...StyleSheet.absoluteFillObject}}>
+        <View style={{flex:1,alignItems:'center',backgroundColor:'green',paddingTop:40}}>
+          <View >
+            <Text style={{fontSize:30}}>Your Commutes</Text>
+            <Button title="Add Commute"
+              onPress = {() => {
+                this.props.navigation.navigate('addNewCommute',{refreshCommutes:()=>this.componentDidMount()});
+              }}
+              style={{paddingTop:10,paddingBottom:10}} icon={<Icon name="plus" size={15} color="white"/>}/>
+          </View>
+          <View style={{width:"100%",backgroundColor:'white'}}>{this.state.listItems}</View>
+          <Button title="Delete all" onPress={()=>deleteAllCommutes(this.componentDidMount)}/>
+        </View>
+      </View>
+    );
+
+  }
+
+}
+
+
+function testSubmit(navigation,route,state){
+  console.log("Seeing on other side");
+  console.log("--Navigation keys ");
+
+  console.log(Object.keys(navigation));
+  console.log("--Route keys");
+  console.log(Object.keys(route));
+
+  console.log((route["params"]));
+  route.params.refreshCommutes();
+  navigation.navigate({ name: 'commutes' });
+
+}
+
+async function submitNewCommuteButton (navigation,route,state){
   Alert.alert(
     'New Commute',
     `Would you like to add the following commute?:\nFrom:${state.from}\nTo:${state.to}\n${state.time}`,
@@ -209,9 +267,10 @@ async function submitNewCommuteButton (navigation,state){
       {text:'Cancel',onPress:()=>(console.log('Cancelled adding commute'))},
       {text: 'OK', onPress: () => {
         addNewCommute(state.from,state.to,state.time).then( (data)=> {
-          Alert.alert("Succesfully added commute");
-          navigation.navigate({ name: 'commutes' });
 
+          route.params.refreshCommutes();
+          navigation.navigate({ name: 'commutes' });
+          Alert.alert("Succesfully added commute");
 
           }).catch((error)=>{
             Alert.alert("Adding commute failed\n:"+error);
@@ -223,53 +282,6 @@ async function submitNewCommuteButton (navigation,state){
 
 }
 
-async function getCommutesButton(){
-  var user_data = getCommutes();
-
-  user_data.then(
-    (data) => {
-      output = '';
-      data.forEach((item, i) => {
-        output+= `from:${item.from} to:${item.to}\n`
-      });
-
-      Alert.alert(
-        "Succesfully retrieved commutes",`Commutes are ${output}`)
-
-    }
-    ).catch(
-      (error) => {
-        Alert.alert("Error retrieving\n"+error);
-      }
-      )
-
-}
-
-class MainView extends React.Component{
-  constructor(props) {
-    super(props)
-    this.handler = this.handler.bind(this)
-  }
-
-  handler() {
-    this.setState({
-      someVar: 'some value'
-    })
-  }
-
-  render() {
-    return <Child handler = {this.handler} />
-  }
-}
-
-
-class Child extends React.Component {
-  render() {
-    return <Button onClick = {this.props.handler}/ >
-  }
-}
-
-
 
 class AddCommuteScreen extends React.Component {
   constructor(props){
@@ -277,6 +289,7 @@ class AddCommuteScreen extends React.Component {
     this.state={timePickerVisible:false}
 
   }
+
 
 
   render (){
@@ -295,90 +308,21 @@ class AddCommuteScreen extends React.Component {
         <Button icon={<Icon name="clock-o" size={15} color="white"/>}
         style={{padding:5}} title="Set Time" onPress={()=>this.setState({timePickerVisible:true})}/>
 
-        <Button containerStyle={{backgroundColor:'green'}} titleStyle={{color:"white"}} type="clear" title="Submit" onPress={()=> submitNewCommuteButton(this.props.navigation,this.state)}/>
+        <Button buttonStyle={{backgroundColor:'green'}}containerStyle={{paddingBottom:40}} titleStyle={{color:"white"}}
+        type="clear" title="Submit"
+        disabled={!(this.state.from && this.state.to && this.state.time)}
+        onPress={()=> submitNewCommuteButton(this.props.navigation,this.props.route,this.state)}/>
+        <Button icon={<Icon name="clock-o" size={15} color="white"/>}
+        style={{padding:5}} title="Test" onPress={()=>testSubmit(this.props.navigation,this.props.route,this.state)}/>
+
+
       </View>
     );
-
-  }
-
-
-}
-
-
-function AddressRevealButton(){
-  return (
-    <Button title="reveal" onPress={()=>this.state.myText = ":)"}>
-    </Button>
-
-    );
-}
-
-
-const list = [
-  {
-    title: 'Appointments',
-    icon: 'av-timer'
-  },
-  {
-    title: 'Trips',
-    icon: 'flight-takeoff'
-  },
-]
-
-
-
-class CommutesListView extends React.Component{
-  constructor (props){
-    super(props);
-    this.state = {commutes:[]}
-  }
-
-
-  async componentDidMount(){
-    const userCommutes = await getCommutes();
-    this.setState({commutes:userCommutes});
-
-  }
-
-  render(){
-    const listItems = []
-    this.state.commutes.forEach((item, i) => {
-      listItems.push(<ListItem key={i} title={item.from +' to '+item.to} onPress={()=>Alert.alert("Test alert","testing...")} bottomDivider/>)
-    });
-
-    return <View style={this.props.style}>{listItems}</View>;
-  }
-}
-
-
-class ExistingCommutesScreen extends React.Component {
-  constructor(props){
-    super(props);
-    this.state = {toggle:false}
-  }
-
-  render(){
-    return (
-      <View style={{flex:1,alignItems:'stretch',...StyleSheet.absoluteFillObject}}>
-        <View style={{flex:1,alignItems:'center',backgroundColor:'green',paddingTop:40}}>
-          <View >
-            <Text style={{fontSize:30}}>Your Commutes</Text>
-            <Button title="Add Commute"
-              onPress = {() => {
-                this.handler;
-                this.props.navigation.navigate('addNewCommute')}
-              }
-              style={{paddingTop:10,paddingBottom:10}} icon={<Icon name="plus" size={15} color="white"/>}/>
-          </View>
-          <CommutesListView style={{width:"100%",backgroundColor:'white'}}/>
-          <Button title="Delete all" onPress={()=>deleteAllCommutes(this)}/>
-        </View>
-      </View>
-    );
-
   }
 
 }
+
+
 
 
 
