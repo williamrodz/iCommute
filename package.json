@@ -23,6 +23,7 @@
     "react": "16.9.0",
     "react-native": "0.61.5",
     "react-native-elements": "^1.2.7",
+    "react-native-firebase-push-notifications": "^0.0.8",
     "react-native-gesture-handler": "^1.6.0",
     "react-native-google-autocomplete": "^0.1.8",
     "react-native-google-places-autocomplete": "^1.4.1",
