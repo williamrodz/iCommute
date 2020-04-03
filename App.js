@@ -7,8 +7,8 @@
  */
 import 'react-native-gesture-handler';
 
-import * as React from 'react';
-import { View, Text,StyleSheet,Alert,Picker,TextInput,TouchableOpacity } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { View, Text,StyleSheet,Alert,Picker,TextInput,TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -28,6 +28,8 @@ import { ListItem, Button } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 Icon.loadFont();
+
+import AddCommute from './AddCommute'
 
 
 const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
@@ -198,6 +200,9 @@ async function deleteAllCommutes(viewRefreshFunction){
 
 
 class ExistingCommutesScreen extends React.Component {
+  state = { currentUser: null }
+
+
   constructor(props){
     super(props);
 
@@ -312,11 +317,13 @@ class ExistingCommutesScreen extends React.Component {
   }
 
   render(){
+    const { currentUser } = this.state
+
     return (
       <View style={{flex:1,alignItems:'stretch',...StyleSheet.absoluteFillObject}}>
         <View style={{flex:1,alignItems:'center',backgroundColor:'green',paddingTop:40}}>
           <View >
-            <Text style={{fontSize:30}}>Your Commutes</Text>
+            <Text style={{fontSize:30}}>{currentUser && currentUser.email} Commutes</Text>
             <Button title="Add Commute"
               onPress = {() => {
                 this.props.navigation.navigate('addNewCommute',{refreshCommutes:()=>this.componentDidMount()});
@@ -380,44 +387,109 @@ async function submitNewCommuteButton (navigation,route,state){
 }
 
 
-class AddCommuteScreen extends React.Component {
-  constructor(props){
-    super(props);
-    this.state={timePickerVisible:false}
-
-  }
-
-
-
-  render (){
+class Loading extends React.Component {
+  render() {
     return (
-      <View style={{flex:1,backgroundColor:'bisque',alignItems:'center',justifyContent:'center',paddingTop:100}}>
-        <Text style={{fontSize:20,paddingBottom:10}}>What's your home address?</Text>
-        <GooglePlacesInput processAddressFunction = {from=>this.setState({from:from})}/>
-        <Text style={{fontSize:20}}>Where's work?</Text>
-        <GooglePlacesInput processAddressFunction = {to=>this.setState({to:to})}/>
-        <DateTimePickerModal
-          isVisible={this.state.timePickerVisible}
-          mode="time"
-          onConfirm={(time)=>this.setState({timePickerVisible:false,time:time})}
-          onCancel={()=>Alert.alert("canceled")}
-        />
-        <Button icon={<Icon name="clock-o" size={15} color="white"/>}
-        style={{padding:5}} title="Set Time" onPress={()=>this.setState({timePickerVisible:true})}/>
-
-        <Button buttonStyle={{backgroundColor:'green'}}containerStyle={{paddingBottom:40}} titleStyle={{color:"white"}}
-        type="clear" title="Submit"
-        disabled={!(this.state.from && this.state.to && this.state.time)}
-        onPress={()=> submitNewCommuteButton(this.props.navigation,this.props.route,this.state)}/>
-        <Button icon={<Icon name="clock-o" size={15} color="white"/>}
-        style={{padding:5}} title="Test" onPress={()=>testSubmit(this.props.navigation,this.props.route,this.state)}/>
-
-
+      <View style={styles.container}>
+        <Text>Loading</Text>
+        <ActivityIndicator size="large" />
       </View>
-    );
+    )
   }
-
 }
+
+class SignUp extends React.Component {
+  state = { email: '', password: '', errorMessage: null }
+handleSignUp = () => {
+  // TODO: Firebase stuff...
+  console.log('handleSignUp')
+}
+render() {
+    return (
+      <View style={styles.container}>
+        <Text>Sign Up</Text>
+        {this.state.errorMessage &&
+          <Text style={{ color: 'red' }}>
+            {this.state.errorMessage}
+          </Text>}
+        <TextInput
+          placeholder="Email"
+          autoCapitalize="none"
+          style={styles.textInput}
+          onChangeText={email => this.setState({ email })}
+          value={this.state.email}
+        />
+        <TextInput
+          secureTextEntry
+          placeholder="Password"
+          autoCapitalize="none"
+          style={styles.textInput}
+          onChangeText={password => this.setState({ password })}
+          value={this.state.password}
+        />
+        <Button title="Sign Up" onPress={this.handleSignUp} />
+        <Button
+          title="Already have an account? Login"
+          onPress={() => this.props.navigation.navigate('Login')}
+        />
+      </View>
+    )
+  }
+}
+
+class Login extends React.Component {
+  state = { email: '', password: '', errorMessage: null }
+  handleLogin = () => {
+    // TODO: Firebase stuff...
+    console.log('handleLogin')
+  }
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text>Login</Text>
+        {this.state.errorMessage &&
+          <Text style={{ color: 'red' }}>
+            {this.state.errorMessage}
+          </Text>}
+        <TextInput
+          style={styles.textInput}
+          autoCapitalize="none"
+          placeholder="Email"
+          onChangeText={email => this.setState({ email })}
+          value={this.state.email}
+        />
+        <TextInput
+          secureTextEntry
+          style={styles.textInput}
+          autoCapitalize="none"
+          placeholder="Password"
+          onChangeText={password => this.setState({ password })}
+          value={this.state.password}
+        />
+        <Button title="Login" onPress={this.handleLogin} />
+        <Button
+          title="Don't have an account? Sign Up"
+          onPress={() => this.props.navigation.navigate('SignUp')}
+        />
+      </View>
+    )
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  textInput: {
+    height: 40,
+    width: '90%',
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginTop: 8
+  }
+})
 
 
 
@@ -437,7 +509,7 @@ class MainAppScreens extends React.Component{
     return (
     <Stack.Navigator >
       <Stack.Screen name="commutes" component={ExistingCommutesScreen}  options={{headerShown: false,title:"Existing Commutes"}}/>
-      <Stack.Screen name="addNewCommute" component={AddCommuteScreen} options={{headerShown: true,title:"Add new commute"}}/>
+      <Stack.Screen name="addNewCommute" component={AddCommute} options={{headerShown: true,title:"Add new commute"}}/>
     </Stack.Navigator>);
 
   }
@@ -455,187 +527,4 @@ function App() {
   );
 }
 
-class RootContainer extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      token: "",
-      hasPermission: false
-    }
-  }
-
-  componentDidMount() {
-    this.onNotificationListener()
-    this.onNotificationOpenedListener()
-    this.getInitialNotification()
-  }
-  componentWillUnmount() {}
-
-  getToken = async () => {
-    //get the messeging token
-    const token = await notifications.getToken()
-    //you can also call messages.getToken() (does the same thing)
-    return token
-  }
-  getInitialNotification = async () => {
-    //get the initial token (triggered when app opens from a closed state)
-    const notification = await notifications.getInitialNotification()
-    console.log("getInitialNotification", notification)
-    return notification
-  }
-
-  onNotificationOpenedListener = () => {
-    //remember to remove the listener on un mount
-    //this gets triggered when the application is in the background
-    this.removeOnNotificationOpened = notifications.onNotificationOpened(
-      notification => {
-        console.log("onNotificationOpened", notification)
-        //do something with the notification
-      }
-    )
-  }
-  
-  onNotificationListener = () => {
-    //remember to remove the listener on un mount
-    //this gets triggered when the application is in the forground/runnning
-    //for android make sure you manifest is setup - else this wont work
-    console.log("Listening to notifications");
-    this.removeOnNotification = notifications.onNotification(notification => {
-      //do something with the notification
-      console.log("onNotification", notification)
-    })
-  }
-
-  onTokenRefreshListener = () => {
-    //remember to remove the listener on un mount
-    //this gets triggered when a new token is generated for the user
-    this.removeonTokenRefresh = messages.onTokenRefresh(token => {
-      //do something with the new token
-    })
-  }
-  setBadge = async number => {
-    //only works on iOS for now
-    return await notifications.setBadge(number)
-  }
-
-  getBadge = async () => {
-    //only works on iOS for now
-    return await notifications.getBadge()
-  }
-
-  hasPermission = async () => {
-    //only works on iOS
-    return await notifications.hasPermission()
-  }
-
-  requestPermission = async () => {
-    //only works on iOS
-    return await notifications.requestPermission()
-  }
-  componentWillUnmount() {
-    //remove the listener on unmount
-    if (this.removeOnNotificationOpened) {
-      this.removeOnNotificationOpened()
-    }
-    if (this.removeOnNotification) {
-      this.removeOnNotification()
-    }
-
-    if (this.removeonTokenRefresh) {
-      this.removeonTokenRefresh()
-    }
-  }
-
-  onTokenButtonPress = async () => {
-    const token = await this.getToken()
-    console.log("token : ", token)
-    this.setState({ token: token })
-  }
-
-  onTestHasPermission = async () => {
-    const has = await this.hasPermission()
-    console.log("Has", has)
-    this.setState({ hasPermission: has })
-  }
-  render() {
-    const { token, hasPermission } = this.state
-
-    return (
-      <View style={{ flex: 3 }}>
-        <View style={{ flex: 1, backgroundColor: "green" }}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: "red",
-              flex: 1,
-              alignContent: "center",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            onPress={() => this.onTokenButtonPress()}
-          >
-            <Text>Get Token</Text>
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            flex: 1,
-            alignContent: "center",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "blue"
-          }}
-        >
-          <Text>Token : {token}</Text>
-        </View>
-        <View style={{ flex: 1, backgroundColor: "pink" }}>
-          <Text>hasPermission: {hasPermission ? "Yes" : "No"}</Text>
-          <TouchableOpacity
-            style={{
-              backgroundColor: "red",
-              flex: 1,
-              alignContent: "center",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            onPress={() => this.onTestHasPermission()}
-          >
-            <Text>Has permission</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              backgroundColor: "red",
-              flex: 1,
-              alignContent: "center",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            onPress={() => this.requestPermission()}
-          >
-            <Text>Get permission</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    )
-
-    return (
-      <>
-        <View style={{ flex: 1, backgroundColor: "blue" }}>
-          <TouchableOpacity
-            style={{ backgroundColor: "red" }}
-            onPress={() => this.onTokenButtonPress()}
-          >
-            <Text>Get Token</Text>
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{ flex: 1, backgroundColor: "green", width: 100, height: 100 }}
-        >
-          <Text>Token : {token}</Text>
-        </View>
-      </>
-    )
-  }
-}
-
-
-export default RootContainer;
+export default App;
