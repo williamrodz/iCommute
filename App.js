@@ -146,12 +146,10 @@ export default class App extends React.Component {
       <NavigationContainer>
         <Stack.Navigator>
               <Stack.Screen name="Loading" component={Loading} />
+              <Stack.Screen name="SignUp" component={SignUp} options={{headerShown: false}} />
+              <Stack.Screen name="Login" component={Login} />
               <Stack.Screen name="Main" component={Main} options={{headerShown: false}} />
               <Stack.Screen name="AddCommute" component={AddCommute} />
-              <Stack.Screen name="Login" component={Login} />
-              <Stack.Screen name="SignUp" component={SignUp} options={{headerShown: false}} />
-
-
 
         </Stack.Navigator>
       </NavigationContainer>

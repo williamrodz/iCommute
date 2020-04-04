@@ -2,6 +2,8 @@ import React, {useState, useEffect} from 'react';
 import { View, Text,StyleSheet, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import database from '@react-native-firebase/database';
+import auth from '@react-native-firebase/auth';
+
 import { ListItem, Button } from 'react-native-elements'
 import { notifications } from "react-native-firebase-push-notifications"
 
@@ -58,7 +60,6 @@ export default class Main extends React.Component {
     super(props);
 
     this.state = {commutes:false,listItems:[]}
-    // this.props.navigation.setParams({refresh:()=>console.log("Called refresh")});
 
   }
 
@@ -134,6 +135,16 @@ export default class Main extends React.Component {
   this.setState({ hasPermission: has })
 }
 
+handleLogout = () => {
+  auth()
+    .signOut()
+    .then(() => {
+      console.log('User signed out!')
+      this.props.navigation.navigate('Login'); //<- not working
+      // this.props.navigation.goBack();
+    });
+}
+
   async componentDidMount(){
 
     const userCommutes = await getCommutes();
@@ -188,6 +199,8 @@ export default class Main extends React.Component {
 
           <Button title="Get Token" onPress={this.getToken}/>
           <Button title="getInitialNotification" onPress={this.getInitialNotification}/>
+          <Button title="Logout" onPress={this.handleLogout}/>
+
 
 
 
