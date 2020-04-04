@@ -3,6 +3,10 @@ import { View, Text,StyleSheet,Alert,Button} from 'react-native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import database from '@react-native-firebase/database';
+import auth from '@react-native-firebase/auth';
+
+
 const apiKeys = require('./apiKeys.json');
 
 const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
@@ -72,6 +76,45 @@ class GooglePlacesInput extends React.Component{
 
   }
 
+
+}
+
+
+async function addNewCommute(fromAddress,toAddress,time){
+  // Get the users ID
+  const uid = auth().currentUser.uid;
+
+  // Create a reference
+  const ref = database().ref(`/users/${uid}/commutes`);
+
+  await ref.push().set({
+    from: fromAddress,
+    to:toAddress,
+    beginHour:time.getHours(),
+    beginMinutes:time.getMinutes()
+  });
+}
+
+async function submitNewCommuteButton (navigation,route,state){
+  Alert.alert(
+    'New Commute',
+    `Would you like to add the following commute?:\nFrom:${state.from}\nTo:${state.to}\n${state.time}`,
+    [
+      {text:'Cancel',onPress:()=>(console.log('Cancelled adding commute'))},
+      {text: 'OK', onPress: () => {
+        addNewCommute(state.from,state.to,state.time).then( (data)=> {
+
+          route.params.refreshCommutes();
+          navigation.navigate({ name: 'Main' });
+          Alert.alert("Succesfully added commute");
+
+          }).catch((error)=>{
+            Alert.alert("Adding commute failed\n:"+error);
+            });
+            }},
+    ],
+    {cancelable: true},
+  );
 
 }
 

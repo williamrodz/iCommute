@@ -33,45 +33,19 @@ import Login from './Login'
 import SignUp from './SignUp'
 
 
-async function onSignIn() {
-  // Get the users ID
-  const uid = auth().currentUser.uid;
+// async function onSignIn() {
+//   // Get the users ID
+//   const uid = auth().currentUser.uid;
+//
+//   // Create a reference
+//   const ref = database().ref(`/users/test_user`); // database().ref(`/users/${uid}`);
+//
+//   // Fetch the data snapshot
+//   const snapshot = await ref.once('value');
+//
+//   return snapshot.val();
+// }
 
-  // Create a reference
-  const ref = database().ref(`/users/test_user`); // database().ref(`/users/${uid}`);
-
-  // Fetch the data snapshot
-  const snapshot = await ref.once('value');
-
-  return snapshot.val();
-}
-
-async function addNewCommute(fromAddress,toAddress,time){
-  // Get the users ID
-  const uid = 'test_user'//auth().currentUser.uid;
-
-  // Create a reference
-  const ref = database().ref(`/users/test_user/commutes`);
-
-  await ref.push().set({
-    from: fromAddress,
-    to:toAddress,
-    beginHour:time.getHours(),
-    beginMinutes:time.getMinutes()
-  });
-}
-
-
-async function deleteAllCommutes(viewRefreshFunction){
-  const ref = database().ref(`/users/test_user/commutes`);
-  ref.remove()
-  .then((data)=>{
-    Alert.alert("Succesfully deleted commutes")
-    viewRefreshFunction();
-    })
-  .catch(error=>"Error deleting:"+error);
-
-}
 
 function testSubmit(navigation,route,state){
   console.log("Seeing on other side");
@@ -84,29 +58,6 @@ function testSubmit(navigation,route,state){
   console.log((route["params"]));
   route.params.refreshCommutes();
   navigation.navigate({ name: 'commutes' });
-
-}
-
-async function submitNewCommuteButton (navigation,route,state){
-  Alert.alert(
-    'New Commute',
-    `Would you like to add the following commute?:\nFrom:${state.from}\nTo:${state.to}\n${state.time}`,
-    [
-      {text:'Cancel',onPress:()=>(console.log('Cancelled adding commute'))},
-      {text: 'OK', onPress: () => {
-        addNewCommute(state.from,state.to,state.time).then( (data)=> {
-
-          route.params.refreshCommutes();
-          navigation.navigate({ name: 'commutes' });
-          Alert.alert("Succesfully added commute");
-
-          }).catch((error)=>{
-            Alert.alert("Adding commute failed\n:"+error);
-            });
-            }},
-    ],
-    {cancelable: true},
-  );
 
 }
 

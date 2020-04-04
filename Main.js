@@ -8,23 +8,48 @@ import { ListItem, Button } from 'react-native-elements'
 import { notifications } from "react-native-firebase-push-notifications"
 
 
+
+
+
 async function getCommutes() {
   // Get the users ID
-  // const uid = auth().currentUser.uid;
+  const uid = auth().currentUser.uid;
+  console.log(`Loading user ${uid}'s commutes`)
 
   // Create a reference
-  const ref = database().ref(`/users/test_user/commutes`);
+  const ref = database().ref(`/users/${uid}/commutes`);
 
   // Fetch the data snapshot
   const snapshot = await ref.once('value');
   var addresses = [];
   const snapShotCommutes = snapshot.val();
-  const timestampKeys = Object.keys(snapShotCommutes);
+
   commutes = [];
-  timestampKeys.forEach((item, i) => {
-    commutes.push(snapShotCommutes[item])
-  });
+
+  if (snapShotCommutes) {
+    const timestampKeys = Object.keys(snapShotCommutes);
+    timestampKeys.forEach((item, i) => {
+      commutes.push(snapShotCommutes[item])
+    });
+  } else{
+    console.log("--No commutes!")
+  }
+
+
   return commutes;
+}
+
+async function deleteAllCommutes(viewRefreshFunction){
+  const uid = auth().currentUser.uid;
+
+  const ref = database().ref(`/users/${uid}/commutes`);
+  ref.remove()
+  .then((data)=>{
+    Alert.alert("Succesfully deleted commutes")
+    viewRefreshFunction();
+    })
+  .catch(error=>"Error deleting:"+error);
+
 }
 
 
@@ -68,13 +93,12 @@ export default class Main extends React.Component {
     const token = await notifications.getToken()
     //you can also call messages.getToken() (does the same thing)
     console.log("Push Token is\n"+token);
-    Alert.alert("Token",token);
+    // Alert.alert("Token",token);
     return token
   }
   getInitialNotification = async () => {
     //get the initial token (triggered when app opens from a closed state)
     const notification = await notifications.getInitialNotification()
-    console.log("getInitialNotification", notification)
     return notification
   }
 
@@ -125,8 +149,8 @@ export default class Main extends React.Component {
 
   requestPermission = async () => {
     //only works on iOS
-    return await notifications.requestPermission()
-    //or     return await messages.requestPermission()
+    var obtainedPermission = await notifications.requestPermission()
+    return this.registerPushIDToFB()
   }
 
   onTestHasPermission = async () => {
@@ -144,6 +168,19 @@ handleLogout = () => {
       // this.props.navigation.goBack();
     });
 }
+
+  registerPushIDToFB = async () => {
+  const uid = auth().currentUser.uid;
+  const pushID = await this.getToken()
+  // Create a reference
+  const ref = database().ref(`/users/${uid}`);
+
+  await ref.set({
+    pushID: pushID,
+  });
+
+}
+
 
   async componentDidMount(){
 

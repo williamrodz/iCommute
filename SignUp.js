@@ -3,6 +3,7 @@ import { View, Text,StyleSheet,Alert,Picker,TextInput, Button } from 'react-nati
 import auth , {firebase} from '@react-native-firebase/auth';
 
 
+
 export default class SignUp extends React.Component {
   state = { email: '', password: '', errorMessage: null }
 
