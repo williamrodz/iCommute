@@ -38,6 +38,29 @@ async function getCommutes() {
   return Promise.all(commutes);
 }
 
+async function deleteCommuteWithID(timestamp,viewRefreshFunction){
+  getCommuteDataFromKey(timestamp).then(commuteData=>{
+    const hour = commuteData.hour
+    const minute = commuteData.minute
+    const userID = commuteData.userID
+
+    const userRef = database().ref(`/users/${userID}/commutes/${timestamp}`);
+    var removedFromUser = userRef.remove()
+
+    const scheduledRef = database().ref(`/scheduled/${hour}/${minute}/${timestamp}`);
+    var removedFromScheduled = scheduledRef.remove()
+
+    const masterRef = database().ref(`/masterCommutes/${timestamp}`);
+    var removedFromMaster = masterRef.remove()
+
+    return Promise.all([removedFromUser,removedFromScheduled,removedFromMaster])
+    .then(data=>viewRefreshFunction(timestamp))
+    .catch(error=>Alert.alert(`Deletion failed ${error}`))
+
+  })
+
+}
+
 async function deleteAllCommutes(viewRefreshFunction){
   const uid = auth().currentUser.uid;
 
@@ -180,21 +203,38 @@ handleLogout = () => {
 
 }
 
+  removeListItemByKey = (key) => {
+    var newListItems = []
+    for (var i = 0; i < this.state.listItems.length; i++) {
+      console.log(this.state.listItems[i].props)
+      if (this.state.listItems[i].props.timestamp != key) {
+        newListItems.push(this.state.listItems[i])
 
-  async componentDidMount(){
+      } else{
+        console.log("not adding item at i="+i)
+      }
+    }
+    this.setState({listItems:newListItems})
+  }
 
+  async updateListItems(){
     const userCommutes = await getCommutes();
     console.log(`Loaded commutes are ${userCommutes}`)
     this.setState({commutes:userCommutes});
-
     if (this.state.commutes){
       var newList = [];
       this.state.commutes.forEach((item, i) => {
-        newList.push(<ListItem key={i} title={item.from +' to '+item.to} onPress={()=>Alert.alert(`${item.from}`)} bottomDivider/>)
+        newList.push(<ListItem key={item.timestamp} timestamp={item.timestamp} title={item.from +' to '+item.to} onPress={()=>deleteCommuteWithID(item.timestamp,this.removeListItemByKey)} bottomDivider/>)
       });
       this.setState({listItems:newList});
     }
 
+  }
+
+
+  async componentDidMount(){
+
+    this.updateListItems()
     this.onNotificationListener()
     this.onNotificationOpenedListener()
     this.getInitialNotification()
