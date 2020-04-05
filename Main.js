@@ -9,7 +9,12 @@ import { notifications } from "react-native-firebase-push-notifications"
 
 
 
+async function getCommuteDataFromKey(key){
+  const masterCommutesRef = database().ref(`/masterCommutes/${key}`);
+  const snapshotCommute = await masterCommutesRef.once('value');
+  return snapshotCommute.val();
 
+}
 
 async function getCommutes() {
   // Get the users ID
@@ -21,22 +26,16 @@ async function getCommutes() {
 
   // Fetch the data snapshot
   const snapshot = await ref.once('value');
-  var addresses = [];
-  const snapShotCommutes = snapshot.val();
+  const snapShotCommuteIDsObj = snapshot.val();
 
-  commutes = [];
-
-  if (snapShotCommutes) {
-    const timestampKeys = Object.keys(snapShotCommutes);
-    timestampKeys.forEach((item, i) => {
-      commutes.push(snapShotCommutes[item])
+  var commutes = []
+  if (snapShotCommuteIDsObj){
+    const snapShotCommuteIDs = Object.keys(snapShotCommuteIDsObj)
+    snapShotCommuteIDs.forEach( async (key, i) => {
+      commutes.push(getCommuteDataFromKey(key))
     });
-  } else{
-    console.log("--No commutes!")
   }
-
-
-  return commutes;
+  return Promise.all(commutes);
 }
 
 async function deleteAllCommutes(viewRefreshFunction){
@@ -185,6 +184,7 @@ handleLogout = () => {
   async componentDidMount(){
 
     const userCommutes = await getCommutes();
+    console.log(`Loaded commutes are ${userCommutes}`)
     this.setState({commutes:userCommutes});
 
     if (this.state.commutes){
