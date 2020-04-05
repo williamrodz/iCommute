@@ -8,6 +8,8 @@ import auth from '@react-native-firebase/auth';
 
 
 const apiKeys = require('./apiKeys.json');
+const FUNCTIONS_URL = 'https://us-central1-icommute-firebase.cloudfunctions.net/'
+
 
 const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
 const workPlace = { description: 'Work', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } }};
@@ -80,19 +82,27 @@ class GooglePlacesInput extends React.Component{
 }
 
 
-async function addNewCommute(fromAddress,toAddress,time){
+async function addNewCommute(from,to,time){
   // Get the users ID
   const uid = auth().currentUser.uid;
 
-  // Create a reference
-  const ref = database().ref(`/users/${uid}/commutes`);
+  const requestURL = FUNCTIONS_URL+`addNewCommute?userID=${uid}&from=${from}&to=${to}&hour=${time.getHours()}&minute=${time.getMinutes()}`
 
-  await ref.push().set({
-    from: fromAddress,
-    to:toAddress,
-    beginHour:time.getHours(),
-    beginMinutes:time.getMinutes()
-  });
+  return fetch(requestURL,{method:'GET'})
+  .then((response) => {
+    return response.json();
+
+    })
+  // Direct method
+  // // Create a reference
+  // const ref = database().ref(`/users/${uid}/commutes`);
+  //
+  // await ref.push().set({
+  //   from: fromAddress,
+  //   to:toAddress,
+  //   beginHour:time.getHours(),
+  //   beginMinutes:time.getMinutes()
+  // });
 }
 
 async function submitNewCommuteButton (navigation,route,state){
